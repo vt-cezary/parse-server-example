@@ -10,9 +10,17 @@ var config = parseServerConfig(__dirname);
 
 var app = express();
 app.use('/public', express.static(__dirname + '/public'));
-app.use('/parse', new ParseServer(config.server));
+
+var api = new ParseServer(config.server);
+
+app.use('/parse', api);
 app.use('/parse-dashboard', ParseDashboard(config.dashboard, true));
 
-app.listen(process.env.PORT || url.parse(config.server.serverURL).port, function () {
-  console.log(`Parse Server running at ${config.server.serverURL}`);
-});
+//app.listen(process.env.PORT || url.parse(config.server.serverURL).port, function () {
+//  console.log(`Parse Server running at ${config.server.serverURL}`);
+//});
+
+// Initialize a LiveQuery server instance, app is the express app of your Parse Server
+var httpServer = require('http').createServer(app);
+httpServer.listen(process.env.PORT || url.parse(config.server.serverURL).port);
+var parseLiveQueryServer = ParseServer.createLiveQueryServer(httpServer);
